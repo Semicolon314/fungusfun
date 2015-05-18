@@ -6,7 +6,7 @@ from twisted.internet.protocol import Protocol
 from twisted.internet.endpoints import TCP4ClientEndpoint, connectProtocol
 from threading import Thread
 
-import json
+import json, zlib
 
 class ClientProtocol(Protocol):
     def __init__(self, netman):
@@ -39,16 +39,18 @@ class Netman:
         return self.protocol != None
 
     def handleData(self, data):
-        packet = json.loads(data.decode("utf-8"))
+        packet = json.loads(zlib.decompress(data).decode("utf-8"))
         self.packets.append(packet)
 
     def sendPacket(self, packet):
         if self.protocol != None:
-            data = json.dumps(packet).encode("utf-8")
+            data = zlib.compress(json.dumps(packet).encode("utf-8"))
             reactor.callFromThread(self.protocol.sendData, data)
 
     def disconnect(self):
         reactor.callFromThread(self.protocol.disconnect)
+
+    def shutdown(self): # kills reactor
         reactor.callFromThread(reactor.stop)
 
     def getPackets(self):

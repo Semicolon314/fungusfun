@@ -23,10 +23,12 @@ class Client:
     def run(self):
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT: sys.exit()
+                if event.type == pygame.QUIT:
+                    self.netman.shutdown()
+                    sys.exit()
                 self.handleEvent(event)
             for packet in self.netman.getPackets():
-                self.handlePacket(event)
+                self.handlePacket(packet)
             self.tick()
             self.draw()
 
