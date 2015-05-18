@@ -28,7 +28,7 @@ class Client:
                     sys.exit()
                 self.handleEvent(event)
             for packet in self.netman.getPackets():
-                self.handlePacket(event)
+                self.handlePacket(packet)
             self.tick()
             self.draw()
 

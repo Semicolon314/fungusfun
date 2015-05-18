@@ -5,6 +5,7 @@ class ClientData:
         self.server = server
         self.protocol = protocol
         self.id = uuid.uuid4()
+        self.name = None
 
     def handleData(self, data):
         packet = json.loads(zlib.decompress(data).decode("utf-8"))
@@ -18,8 +19,14 @@ class ClientData:
         t = packet["type"]
 
         if t == "requestname":
-            # TODO: actually validate the name
-            self.sendPacket({"type": "validatename", "name": packet["name"], "valid": True})
+            if self.name == None:
+                valid = self.server.validName(packet["name"])
+                obj = {"type": "validatename", "name": packet["name"], "valid": valid == "valid"}
+                if valid == "valid":
+                    self.name = packet["name"]
+                else:
+                    obj["reason"] = valid
+                self.sendPacket(obj)
 
         pass
 
