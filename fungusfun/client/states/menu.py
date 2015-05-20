@@ -1,5 +1,6 @@
 import pygame
 from fungusfun.client.states import ClientState
+from fungusfun.client.states.play import StatePlay
 
 class StateMenu:
     def __init__(self, client):
@@ -11,7 +12,7 @@ class StateMenu:
     def handleEvent(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.buttonRect.collidepoint(event.pos):
-                print("CLICK!")
+                self.client.state = StatePlay(self.client)
 
     def handlePacket(self, packet):
         pass

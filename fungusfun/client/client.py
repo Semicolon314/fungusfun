@@ -2,6 +2,7 @@ import sys, os
 import pygame
 from fungusfun import config
 from fungusfun.client.netman import Netman
+from fungusfun.client.assetman import getImage
 
 # TODO: refactor importing of client states (package?)
 from fungusfun.client.states.connecting import StateConnecting
@@ -10,7 +11,7 @@ class Client:
     def __init__(self):
         pygame.init()
 
-        icon = pygame.image.load(os.path.join("fungusfun", "client", "assets", "icon.png"))
+        icon = getImage("icon.png")
         pygame.display.set_icon(icon)
 
         self.screen = pygame.display.set_mode(config.DEFAULT_CLIENT_SIZE)
