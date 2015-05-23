@@ -15,6 +15,8 @@ class StatePlay:
         # add some solid tiles to game for testing
         self.game.m.setTile((3, 8), tiles.GRASS)
         self.game.m.setTile((5, 6), tiles.GRASS)
+        for r in range(4, 7):
+            self.game.m.setTile((8, r), tiles.GRASS)
         self.game.spawnPlayers()
 
     def handleEvent(self, event):

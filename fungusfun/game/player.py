@@ -18,6 +18,7 @@ class Player:
         self.inputs = []
         self.item = None
         self.falling = False
+        self.jumping = 0 # Number of frames jumping
 
         self.history = {}
 
@@ -56,31 +57,38 @@ class Player:
             x, y = self.pos
 
             # Apply accelerations
-            if JUMP in self.inputs and not self.falling:
-                self.falling = True
-                vy = -gameconfig.JUMP_ACCEL
+            friction = gameconfig.FRICTION_GROUND if not self.falling else gameconfig.FRICTION_AIR
             self.falling = True
-            if self.falling:
-                vy = min(gameconfig.MAX_FALL, vy + gameconfig.GRAVITY)
-            else:
-                vy = 0
-            if abs(vx) > gameconfig.FRICTION:
-                vx -= math.floor(math.copysign(gameconfig.FRICTION, vx))
-            else:
-                vx = 0
+
+            if JUMP in self.inputs and self.jumping < gameconfig.MAX_JUMP:
+                self.jumping += 1
+                vy = -gameconfig.JUMP_ACCEL
+            elif self.jumping > 0:
+                self.jumping = gameconfig.MAX_JUMP
+
+            vy = min(gameconfig.MAX_FALL, vy + gameconfig.GRAVITY)
+            
+            moving = False
             if MOVE_LEFT in self.inputs:
-                vx -= gameconfig.MOVE_ACCEL
+                vx -= friction
+                moving = True
             if MOVE_RIGHT in self.inputs:
-                vx += gameconfig.MOVE_ACCEL
+                vx += friction
+                moving = True
+            if not moving:
+                if abs(vx) > friction:
+                    vx -= math.copysign(friction, vx)
+                else:
+                    vx = 0
             if abs(vx) > gameconfig.MAX_MOVE:
-                vx = math.floor(math.copysign(gameconfig.MAX_MOVE, vx))
+                vx = math.copysign(gameconfig.MAX_MOVE, vx)
 
             # Apply velocities
             if vx < 0:
                 if x % TILE_SIZE < -vx: # crossing into a new column
-                    top = y // TILE_SIZE
-                    bot = (y + PLAYER_SIZE - 1) // TILE_SIZE
-                    newcol = (x + vx) // TILE_SIZE
+                    top = int(y // TILE_SIZE)
+                    bot = int((y + PLAYER_SIZE - 1) // TILE_SIZE)
+                    newcol = int((x + vx) // TILE_SIZE)
                     if self.game.m.isSolid((newcol, top)) or self.game.m.isSolid((newcol, bot)): # hit a wall
                         x = (newcol + 1) * TILE_SIZE
                         vx = 0
@@ -90,9 +98,9 @@ class Player:
                     x += vx
             elif vx > 0:
                 if (-x - PLAYER_SIZE) % TILE_SIZE < vx:
-                    top = y // TILE_SIZE
-                    bot = (y + PLAYER_SIZE - 1) // TILE_SIZE
-                    newcol = (x + PLAYER_SIZE + vx - 1) // TILE_SIZE
+                    top = int(y // TILE_SIZE)
+                    bot = int((y + PLAYER_SIZE - 1) // TILE_SIZE)
+                    newcol = int((x + PLAYER_SIZE + vx) // TILE_SIZE)
                     if self.game.m.isSolid((newcol, top)) or self.game.m.isSolid((newcol, bot)): # hit a wall
                         x = newcol * TILE_SIZE - PLAYER_SIZE
                         vx = 0
@@ -103,9 +111,9 @@ class Player:
 
             if vy < 0:
                 if y % TILE_SIZE < -vy: # crossing into a new row
-                    left = x // TILE_SIZE
-                    right = (x + PLAYER_SIZE - 1) // TILE_SIZE
-                    newrow = (y + vy) // TILE_SIZE
+                    left = int(x // TILE_SIZE)
+                    right = int((x + PLAYER_SIZE - 1) // TILE_SIZE)
+                    newrow = int((y + vy) // TILE_SIZE)
                     if self.game.m.isSolid((left, newrow)) or self.game.m.isSolid((right, newrow)): # hit a wall
                         y = (newrow + 1) * TILE_SIZE
                         vy = 0
@@ -115,20 +123,21 @@ class Player:
                     y += vy
             elif vy > 0:
                 if (-y - PLAYER_SIZE) % TILE_SIZE < vy:
-                    left = x // TILE_SIZE
-                    right = (x + PLAYER_SIZE - 1) // TILE_SIZE
-                    newrow = (y + PLAYER_SIZE + vy - 1) // TILE_SIZE
+                    left = int(x // TILE_SIZE)
+                    right = int((x + PLAYER_SIZE - 1) // TILE_SIZE)
+                    newrow = int((y + PLAYER_SIZE + vy) // TILE_SIZE)
                     if self.game.m.isSolid((left, newrow)) or self.game.m.isSolid((right, newrow)): # hit a wall
                         y = newrow * TILE_SIZE - PLAYER_SIZE
                         vy = 0
                         self.falling = False
+                        self.jumping = 0
                     else:
                         y += vy
                 else:
                     y += vy
 
-            self.vel = (vx, vy)
-            self.pos = (x, y)
+            self.vel = (math.floor(vx * 10) / 10, math.floor(vy * 10) / 10)
+            self.pos = (math.floor(x * 10) / 10, math.floor(y * 10) / 10)
 
             # remove jumps and item uses; they aren't held down
             if JUMP in self.inputs: self.inputs.remove(JUMP)

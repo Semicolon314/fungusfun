@@ -1,11 +1,12 @@
 TILE_SIZE = 64 # Draw any size, but underneath tiles are always 64 pixels
 PLAYER_SIZE = 56
-MAX_FALL = 25 # maximum pixels per second of falling
-MAX_MOVE = 8 # maximum pps sideways movement
-GRAVITY = 1 # pixels per second squared
-FRICTION = 1 # pps^2
-MOVE_ACCEL = 2 # pps^2
-JUMP_ACCEL = 22
+MAX_FALL = 16 # maximum pixels per second of falling
+MAX_MOVE = 10 # maximum pps sideways movement
+GRAVITY = 0.7 # pixels per second squared
+FRICTION_GROUND = 2.0 # pps^2
+FRICTION_AIR = 1.3
+JUMP_ACCEL = 16
+MAX_JUMP = 10
 
 # These assertions can be lifted later, but currently the physics engine makes these assumptions
 assert(PLAYER_SIZE < TILE_SIZE)
